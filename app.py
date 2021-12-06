@@ -41,8 +41,9 @@ commands = [
     {'command' : 'vol_release', 'description' : 'remove the hold'},
     {'command' : 'vol_set_tickers', 'description' : 'set a list of coins by their ticker names that the trade bot will invest on'},
     {'command' : 'vol_set_ratio', 'description' : 'set a ratio that you want to invest out of your current balance'},
-    {'command' : 'buy', 'description' : 'buy a coin at a market order'},
-    {'command' : 'sell', 'description' : 'sell a coin at a market order'},
+    {'command' : 'buy', 'description' : 'buy a coin at the market order'},
+    {'command' : 'sell', 'description' : 'sell a coin at the market order'},
+    {'command' : 'sell_all', 'description' : 'sell all the coins at the market order'},
     {'command' : 'random_game', 'description' : 'buy random coins'},
     {'command' : 'alert_off', 'description' : 'set alert off'},
     {'command' : 'alert_on', 'description' : 'set alert on'},
@@ -226,6 +227,15 @@ def sell_command(message, cmd):
         msg = ownership_mismatch(message, '/sell')
         app.send_message(chat_dest, msg)
 
+@app.route('/sell_all')
+def sell_all_command(message):
+    chat_dest = message['chat']['id']
+    if owner == chat_dest:
+        trade.sell_all()
+    else:
+        msg = ownership_mismatch(message, '/sell_all')
+        app.send_message(chat_dest, msg)
+
 @app.route('/vol_set_tickers ?(.*)')
 def vol_set_tickers_command(message, cmd):
     chat_dest = message['chat']['id']
@@ -259,8 +269,9 @@ def help_command(message):
             '/vol_release - remove the hold',
             '/vol_set_tickers [ticker name 1] [ticker name 2] ... - set a list of coins by their ticker names that the trade bot will invest on',
             '/vol_set_ratio [ratio] - set a ratio that you want to invest out of your current balance',
-            '/buy [ticker name] [price] - buy a coin at a market order',
-            '/sell [ticker name] [price] - sell a coin at a market order',
+            '/buy [ticker name] [price] - buy a coin at the market order',
+            '/sell [ticker name] [price] - sell a coin at the market order',
+            '/sell_all - sell all the coins at the market order',
             '/random_game [number of coins] [price] - buy random coins',
             '/alert_off - set alert off',
             '/alert_on - set alert on',
