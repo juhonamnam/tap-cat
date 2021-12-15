@@ -214,6 +214,7 @@ class VBSThread(threading.Thread):
 
     def __init__(self, account, tickers, betting, message, record, reset_hour = None):
         threading.Thread.__init__(self)
+        self.daemon = True
 
         # Initial variables
         self.account = account
@@ -421,6 +422,7 @@ class AlertThread(threading.Thread):
         self.messageKeyboardButtons = messageKeyboardButtons
         self.sell_alert = dict()
         self.working = False
+        self.daemon = True
 
     def run(self):
         self.working = True
