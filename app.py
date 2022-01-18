@@ -1,6 +1,7 @@
 from telebot import TeleBot
 from TradeMethod.TradeBot import TradeBot
 from TelegramAPI.telegramAPI import setMyCommands
+from mess.commands import *
 
 app = TeleBot(__name__)
 
@@ -31,27 +32,7 @@ except:
     with open("./tele-key", "w") as f:
         f.write(f"{tele_key}")
 
-commands = [
-    {'command' : 'status', 'description' : 'get trade bot status'},
-    {'command' : 'vol_start', 'description' : 'start trading'},
-    {'command' : 'vol_stop', 'description' : 'stop trading'},
-    {'command' : 'vol_reset', 'description' : 'sell all the coins that the trade bot bought, and restart'},
-    {'command' : 'vol_extend', 'description' : 'extend reset time, a scheduled time that the trade bot will sell'},
-    {'command' : 'vol_hold', 'description' : 'hold trading'},
-    {'command' : 'vol_release', 'description' : 'remove the hold'},
-    {'command' : 'vol_set_tickers', 'description' : 'set a list of coins by their ticker names that the trade bot will invest on'},
-    {'command' : 'vol_set_ratio', 'description' : 'set a ratio that you want to invest out of your current balance'},
-    {'command' : 'buy', 'description' : 'buy a coin at the market order'},
-    {'command' : 'sell', 'description' : 'sell a coin at the market order'},
-    {'command' : 'sell_all', 'description' : 'sell all the coins at the market order'},
-    {'command' : 'random_game', 'description' : 'buy random coins'},
-    {'command' : 'alert_off', 'description' : 'set alert off'},
-    {'command' : 'alert_on', 'description' : 'set alert on'},
-    {'command' : 'rand_add_exception', 'description' : 'add a coin on exception list that the random game will by'},
-    {'command' : 'rand_remove_exception', 'description' : 'remove a coin on exception list that the random game will by'}
-]
-
-setMyCommands(app.config['api_key'], commands)
+setMyCommands(app.config['api_key'], get_commands())
 
 trade = TradeBot(
     method = 'telegram',
@@ -259,25 +240,7 @@ def help_command(message):
     chat_dest = message['chat']['id']
     if owner == chat_dest:
 
-        msg = '\n'.join((
-            '/status - get trade bot status',
-            '/vol_start - start trading',
-            '/vol_stop - stop trading',
-            '/vol_reset - sell all the coins that the trade bot bought, and restart',
-            '/vol_extend - extend reset time, a scheduled time that the trade bot will sell',
-            '/vol_hold - hold trading',
-            '/vol_release - remove the hold',
-            '/vol_set_tickers [ticker name 1] [ticker name 2] ... - set a list of coins by their ticker names that the trade bot will invest on',
-            '/vol_set_ratio [ratio] - set a ratio that you want to invest out of your current balance',
-            '/buy [ticker name] [price] - buy a coin at the market order',
-            '/sell [ticker name] [price] - sell a coin at the market order',
-            '/sell_all - sell all the coins at the market order',
-            '/random_game [number of coins] [price] - buy random coins',
-            '/alert_off - set alert off',
-            '/alert_on - set alert on',
-            '/rand_add_exception - add a coin on exception list that the random game will by',
-            '/rand_remove_exception - remove a coin on exception list that the random game will by'
-        ))
+        msg = help_msg
             
     else:
         msg = ownership_mismatch(message, '/help')
