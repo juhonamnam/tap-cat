@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "basic": {
+      "format": "%(asctime)s %(levelname)s %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    }
+  },
+  "handlers": {
+    "file_info": {
+      "class": "logging.FileHandler",
+      "level": "INFO",
+      "formatter": "basic",
+      "filename": "telesk_app.log"
+    }
+  },
+  "loggers": {
+    "telesk": {
+      "level": "INFO",
+      "handlers": ["file_info"],
+      "propagate": true
+    }
+  }
+}
