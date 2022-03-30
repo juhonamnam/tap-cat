@@ -1,2 +1,2 @@
 from .base import controller
-from . import (main_controller, random_game_controller)
+from . import (common_controller, random_game_controller, setting_controller)

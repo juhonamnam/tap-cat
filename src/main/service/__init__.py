@@ -1,1 +1,1 @@
-from src.main.service.main_service import *
+from src.main.service.setting_service import *

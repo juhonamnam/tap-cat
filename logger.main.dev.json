@@ -20,6 +20,11 @@
       "level": "INFO",
       "handlers": ["file_info"],
       "propagate": true
+    },
+    "rise_alert": {
+      "level": "INFO",
+      "handlers": ["file_info"],
+      "propagate": true
     }
   }
 }

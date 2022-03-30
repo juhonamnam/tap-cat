@@ -1,22 +1,20 @@
 import threading
-from src.upbit.exchange_api import UpbitExchangeApi
-from src.upbit.quotation_api import UpbitQuotationApi
 import time
-from src.telesk.app import Telesk
 from src.resources import get_message
+from src.upbit import upbit_exchange_api, upbit_quotation_api
+from src.main.controller.base import controller
+import logging
 
 
 class RiseAlertThread(threading.Thread):
 
-    def __init__(self, access, secret, telesk_app: Telesk):
+    def __init__(self):
         threading.Thread.__init__(self)
-        self.upbit_quotation_api = UpbitQuotationApi()
-        self.upbit_exchange_api = UpbitExchangeApi(access, secret)
-        self.telesk_app = telesk_app
         self.sell_alert = dict()
         self.thread_alive = True
         self.thread_active = False
         self.daemon = True
+        self.logger = logging.getLogger('rise_alert')
 
     def run(self):
         self.thread_active = True
@@ -24,21 +22,21 @@ class RiseAlertThread(threading.Thread):
         while self.thread_alive:
             if self.thread_active:
                 try:
-                    balances = self.upbit_exchange_api.get_balances()
+                    balances = upbit_exchange_api.get_balances()
                     if not balances['ok']:
                         raise Exception(balances['description'])
 
                     avg_buy_prices = {x['unit_currency'] + '-' + x['currency']: x['avg_buy_price']
                                       for x in balances['data'] if x['currency'] != x['unit_currency']}
 
-                    all_tickers = self.upbit_quotation_api.get_tickers()
+                    all_tickers = upbit_quotation_api.get_tickers()
                     if not all_tickers['ok']:
                         raise Exception(all_tickers['description'])
 
                     valid_tickers = all_tickers['data'].intersection(
                         avg_buy_prices.keys())
 
-                    curr_prices = self.upbit_quotation_api.get_current_prices(
+                    curr_prices = upbit_quotation_api.get_current_prices(
                         valid_tickers)
                     if not curr_prices['ok']:
                         raise Exception(curr_prices['description'])
@@ -74,7 +72,7 @@ class RiseAlertThread(threading.Thread):
                                 ticker, self.sell_alert[ticker]['interest'])
 
                 except Exception as e:
-                    self.telesk_app.logger.exception(e)
+                    self.logger.exception(e)
                     time.sleep(5)
 
             time.sleep(2)
@@ -84,8 +82,11 @@ class RiseAlertThread(threading.Thread):
     def end(self):
         self.thread_alive = False
 
+    def set_active_status(self, activity: bool):
+        self.thread_active = activity
+
     def _send_alert(self, ticker, intr):
-        self.telesk_app.send_message_with_dict({
-            'chat_id': self.telesk_app.config['one_user'],
+        controller.send_message_with_dict({
+            'chat_id': controller.config['one_user'],
             'text': get_message()('rise_alert').format(ticker=ticker, intr=intr)
         })

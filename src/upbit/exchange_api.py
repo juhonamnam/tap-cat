@@ -4,11 +4,20 @@ import uuid
 
 
 class UpbitExchangeApi:
-    def __init__(self, access, secret):
+    def __init__(self):
+        pass
+
+    def config(self, access, secret):
         self.access = access
         self.secret = secret
 
     def _request(self, method, endpoint, **kwargs):
+        if not self.access or not self.secret:
+            return {
+                'ok': False,
+                'description': 'Access key and secret key is missing'
+            }
+
         base_api = "https://api.upbit.com/v1/{endpoint}"
         endpoint = base_api.format(endpoint=endpoint)
 

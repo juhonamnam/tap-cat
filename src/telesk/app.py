@@ -36,6 +36,7 @@ class Telesk(Scaffold):
         blueprint.delete_message_thread = self.delete_message_thread
         blueprint.answer_callback_query = self.answer_callback_query
         blueprint.answer_callback_query_with_dict = self.answer_callback_query_with_dict
+        blueprint.config = self.config
 
         for bp in blueprint._blueprints:
             self.register_blueprint(bp)
@@ -63,13 +64,15 @@ class Telesk(Scaffold):
                 is_group = msg_info['chat']['type'] == 'group'
 
                 if is_group and not self.config['allow_group']:
-                    self.logger.info(f'Message Received (Disallowed by Group Message Config): {str(msg)}')
+                    self.logger.info(
+                        f'Message Received (Disallowed by Group Message Config): {str(msg)}')
                     return
 
                 chat_id = msg_info.get('chat', {}).get('id')
 
                 if self.config['one_user'] and self.config['one_user'] != str(chat_id):
-                    self.logger.info(f'Message Received (Disallowed by One User Message Config): {str(msg)}')
+                    self.logger.info(
+                        f'Message Received (Disallowed by One User Message Config): {str(msg)}')
                     return
 
                 self.logger.info(f'Message Received: {str(msg)}')

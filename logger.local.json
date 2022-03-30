@@ -19,6 +19,11 @@
       "level": "DEBUG",
       "handlers": ["console"],
       "propagate": true
+    },
+    "rise_alert": {
+      "level": "DEBUG",
+      "handlers": ["console"],
+      "propagate": true
     }
   }
 }

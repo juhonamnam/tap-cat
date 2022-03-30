@@ -1,6 +1,6 @@
 def get_commands():
     commands = [
-        {'command': 'status', 'description': 'status'},
+        {'command': 'setting', 'description': 'setting'},
         {'command': 'random_game', 'description': 'random_game'}
     ]
     return commands
