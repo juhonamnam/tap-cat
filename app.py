@@ -9,7 +9,7 @@ import logging.config
 import json
 
 if len(sys.argv) > 1 and sys.argv[1] == 'dev':
-    logging.config.dictConfig(json.load(open('./logger.main.dev.json')))
+    logging.config.dictConfig(json.load(open('./logger.dev.json')))
 else:
     logging.config.dictConfig(json.load(open('./logger.local.json')))
 

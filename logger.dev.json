@@ -3,7 +3,7 @@
   "disable_existing_loggers": false,
   "formatters": {
     "basic": {
-      "format": "%(asctime)s %(levelname)s %(message)s",
+      "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
       "datefmt": "%Y-%m-%d %H:%M:%S"
     }
   },
@@ -12,18 +12,24 @@
       "class": "logging.FileHandler",
       "level": "INFO",
       "formatter": "basic",
-      "filename": "telesk_app.log"
+      "filename": "app_dev.log"
+    },
+    "file_error": {
+      "class": "logging.FileHandler",
+      "level": "ERROR",
+      "formatter": "basic",
+      "filename": "app_dev_error.log"
     }
   },
   "loggers": {
     "telesk": {
       "level": "INFO",
-      "handlers": ["file_info"],
+      "handlers": ["file_info", "file_error"],
       "propagate": true
     },
     "rise_alert": {
       "level": "INFO",
-      "handlers": ["file_info"],
+      "handlers": ["file_info", "file_error"],
       "propagate": true
     }
   }
