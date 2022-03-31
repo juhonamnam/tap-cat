@@ -6,20 +6,23 @@ import json
 
 def setting_service(chat_id, msg_id, callback=False):
     ra_status = 'active' if rise_alert_thread.thread_active else 'inactive'
+    text = get_message()('setting.default').format(rise_alert=get_message()
+                                                   (f'com.{ra_status}'), rg_exception_list='KRW-EOS')
+    inline_keyboard = [
+        [{'text': get_message()('setting.rise_alert'),
+          'callback_data': 'rise_alert'}],
+        [{'text': get_message()('com.exit'),
+          'callback_data': 'exit'}],
+    ]
 
     if callback:
         controller.edit_message_with_dict({
             'message_id': msg_id,
             'chat_id': chat_id,
-            'text': get_message()('setting.default').format(rise_alert=get_message()(f'com.{ra_status}'), rg_exception_list='KRW-EOS'),
+            'text': text,
             'parse_mode': 'HTML',
             'reply_markup': json.dumps({
-                'inline_keyboard': [
-                    [{'text': get_message()('setting.rise_alert'),
-                      'callback_data': 'rise_alert'}],
-                    [{'text': get_message()('com.exit'),
-                      'callback_data': 'exit'}],
-                ]
+                'inline_keyboard': inline_keyboard
             })
 
         })
@@ -28,15 +31,10 @@ def setting_service(chat_id, msg_id, callback=False):
     controller.delete_message_thread(chat_id, msg_id)
     controller.send_message_with_dict({
         'chat_id': chat_id,
-        'text': get_message()('setting.default').format(rise_alert=get_message()(f'com.{ra_status}'), rg_exception_list='KRW-EOS'),
+        'text': text,
         'parse_mode': 'HTML',
         'reply_markup': json.dumps({
-            'inline_keyboard': [
-                [{'text': get_message()('setting.rise_alert'),
-                  'callback_data': 'rise_alert'}],
-                [{'text': get_message()('com.exit'),
-                  'callback_data': 'exit'}],
-            ]
+            'inline_keyboard': inline_keyboard
         })
     })
 

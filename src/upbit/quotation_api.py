@@ -117,11 +117,28 @@ class UpbitQuotationApi:
 
         return response
 
-    def get_tickers(self, ticker_only=True):
+    def get_tickers(self, method='ticker_only', fiat='KRW', offset=0, limit=12):
 
         response = self._request(requests.get, 'market/all?isDetails=false')
 
-        if ticker_only and response['ok']:
-            response['data'] = {x['market'] for x in response['data']}
+        if not response['ok']:
+            return response
 
-        return response
+        if method == 'ticker_only':
+            response['data'] = {x['market']
+                                for x in response['data'] if x['market'].startswith(fiat)}
+            return response
+
+        if method == 'paging':
+            data = [x['market']
+                    for x in response['data'] if x['market'].startswith(fiat)]
+
+            response['data'] = {
+                'paginate': {
+                    'total': len(data),
+                    'limit': limit,
+                    'offset': offset
+                },
+                'list': [x for x in data[offset * limit: offset * limit + limit]]
+            }
+            return response

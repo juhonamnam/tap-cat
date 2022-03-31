@@ -15,3 +15,9 @@ def start_command(chat_id, args, msg_info):
 @controller.route('exit', type='callback')
 def exit_callback(chat_id, msg_id, args, callback_info):
     controller.delete_message(chat_id, msg_id)
+
+
+@controller.route('dummy_callback', type='callback')
+def setting_command(chat_id, msg_id, args, callback_info):
+    controller.answer_callback_query(
+        callback_info['id'], cache_time=10000)
