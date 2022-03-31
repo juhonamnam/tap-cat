@@ -13,5 +13,5 @@ def start_command(chat_id, args, msg_info):
 
 
 @controller.route('exit', type='callback')
-def setting_command(chat_id, msg_id, args, callback_info):
+def exit_callback(chat_id, msg_id, args, callback_info):
     controller.delete_message(chat_id, msg_id)
