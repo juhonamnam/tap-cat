@@ -142,3 +142,5 @@ class UpbitQuotationApi:
                 'list': [x for x in data[offset * limit: offset * limit + limit]]
             }
             return response
+
+        return response

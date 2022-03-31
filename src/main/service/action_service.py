@@ -41,6 +41,17 @@ def buy_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
         method='paging', offset=offset, limit=limit)
 
     if not tickers_info['ok']:
+        controller.edit_message_with_dict({
+            'message_id': msg_id,
+            'chat_id': chat_id,
+            'text': f'Error: {tickers_info["description"]}',
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': 'Retry', 'callback_data': f'buy_page {offset}'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+            'parse_mode': 'HTML',
+        })
+
         return
 
     inline_keyboard = []
