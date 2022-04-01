@@ -47,3 +47,7 @@ def start_command(chat_id, text, msg_info):
     if action in ['buy']:
         service.buy_service(
             chat_id, msg_info['message_id'], reply['message_id'], arg, text)
+
+    elif action in ['Random Game']:
+        service.random_game_service(
+            chat_id, msg_info['message_id'], reply['message_id'], text)

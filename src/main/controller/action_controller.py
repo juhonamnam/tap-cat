@@ -32,4 +32,4 @@ def sell_callback(chat_id, msg_id, args, callback_info):
 
 @controller.route('random_game', type='callback')
 def random_game_callback(chat_id, msg_id, args, callback_info):
-    pass
+    service.random_game_input_service(chat_id, msg_id)

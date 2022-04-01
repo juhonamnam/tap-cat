@@ -2,6 +2,7 @@ from src.resources import get_message
 from src.main.controller.base import controller
 from src.upbit import upbit_quotation_api
 import json
+import random
 
 
 def action_service(chat_id, msg_id, callback=False):
@@ -129,12 +130,57 @@ def buy_price_input_service(chat_id, msg_id, ticker):
     })
 
 
+def random_game_input_service(chat_id, msg_id):
+    controller.delete_message_thread(chat_id, msg_id)
+    controller.send_message_with_dict({
+        'chat_id': chat_id,
+        'text': 'Order Type: <b>Random Game</b>\n\nEnter the number of coins and the amount for each coin',
+        'reply_markup': json.dumps({
+            'force_reply': True,
+            'input_field_placeholder': '[number of coins] [price]',
+        }),
+        'parse_mode': 'HTML',
+    })
+
+
 def buy_service(chat_id, msg_id, reply_msg_id, ticker, price):
+    # 매수 연동 작업 필요
     controller.delete_message_thread(chat_id, msg_id)
     controller.delete_message_thread(chat_id, reply_msg_id)
 
-    # 매수작업 연동
     controller.send_message_with_dict({
         'chat_id': chat_id,
         'text': f'Ticker: {ticker}\nPrice: {price}'
+    })
+
+
+def random_game_service(chat_id, msg_id, reply_msg_id, text: str):
+    # Random Game 연동 작업 필요
+
+    args = text.split(' ')
+    if len(args) < 2:
+        return
+
+    try:
+        select = int(args[0])
+        price = int(args[1])
+    except ValueError:
+        return
+
+    if select < 1 or price < 5000:
+        return
+
+    tickers_info = upbit_quotation_api.get_tickers(method='list')
+
+    if not tickers_info['ok']:
+        return
+
+    choices = random.choices(tickers_info['data'], k=select)
+
+    controller.delete_message_thread(chat_id, msg_id)
+    controller.delete_message_thread(chat_id, reply_msg_id)
+
+    controller.send_message_with_dict({
+        'chat_id': chat_id,
+        'text': f'choices {choices}\nPrice: {price}'
     })
