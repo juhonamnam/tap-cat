@@ -1,6 +1,7 @@
+import time
 from src.resources import get_message
 from src.main.controller.base import controller
-from src.upbit import upbit_quotation_api
+from src.upbit import upbit_quotation_api, upbit_exchange_api
 import json
 import random
 
@@ -144,19 +145,30 @@ def random_game_input_service(chat_id, msg_id):
 
 
 def buy_service(chat_id, msg_id, reply_msg_id, ticker, price):
-    # 매수 연동 작업 필요
+
+    try:
+        price = int(price)
+    except ValueError:
+        return
+
+    if price < 5000:
+        return
+
+    result = upbit_exchange_api.buy_market_order_fee_included(ticker, price)
+
+    if not result['ok']:
+        return
+
     controller.delete_message_thread(chat_id, msg_id)
     controller.delete_message_thread(chat_id, reply_msg_id)
 
     controller.send_message_with_dict({
         'chat_id': chat_id,
-        'text': f'Ticker: {ticker}\nPrice: {price}'
+        'text': f'{ticker}: Success'
     })
 
 
 def random_game_service(chat_id, msg_id, reply_msg_id, text: str):
-    # Random Game 연동 작업 필요
-
     args = text.split(' ')
     if len(args) < 2:
         return
@@ -175,12 +187,23 @@ def random_game_service(chat_id, msg_id, reply_msg_id, text: str):
     if not tickers_info['ok']:
         return
 
-    choices = random.choices(tickers_info['data'], k=select)
-
     controller.delete_message_thread(chat_id, msg_id)
     controller.delete_message_thread(chat_id, reply_msg_id)
 
+    choices = random.choices(tickers_info['data'], k=select)
+
+    rows = []
+
+    for ticker in choices:
+        result = upbit_exchange_api.buy_market_order_fee_included(
+            ticker, price)
+        if result['ok']:
+            rows.append(f'{ticker}: Success')
+        else:
+            rows.append(f'{ticker}: Fail')
+        time.sleep(0.5)
+
     controller.send_message_with_dict({
         'chat_id': chat_id,
-        'text': f'choices {choices}\nPrice: {price}'
+        'text': '\n'.join(rows)
     })

@@ -1,6 +1,8 @@
 import requests
 import jwt
 import uuid
+from urllib.parse import urlencode
+import hashlib
 import logging
 from .quotation_api import upbit_quotation_api
 
@@ -27,6 +29,18 @@ class UpbitExchangeApi:
             'access_key': self.access,
             'nonce': str(uuid.uuid4()),
         }
+
+        if kwargs.get('data'):
+
+            query_string = urlencode(kwargs['data']).encode()
+
+            m = hashlib.sha512()
+            m.update(query_string)
+            query_hash = m.hexdigest()
+
+            payload['query_hash'] = query_hash
+            payload['query_hash_alg'] = 'SHA512'
+
         jwt_token = jwt.encode(payload, self.secret)
         authorize_token = 'Bearer {}'.format(jwt_token)
         headers = {"Authorization": authorize_token}
