@@ -19,6 +19,12 @@ def buy_callback(chat_id, msg_id, args, callback_info):
     service.buy_page_service(chat_id, msg_id, offset)
 
 
+@controller.route('buy', type='callback')
+def buy_callback(chat_id, msg_id, args, callback_info):
+    ticker = args[0]
+    service.buy_price_input_service(chat_id, msg_id, ticker)
+
+
 @controller.route('sell', type='callback')
 def sell_callback(chat_id, msg_id, args, callback_info):
     pass

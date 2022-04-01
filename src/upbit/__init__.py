@@ -1,5 +1,2 @@
-from .quotation_api import UpbitQuotationApi
-from .exchange_api import UpbitExchangeApi
-
-upbit_quotation_api = UpbitQuotationApi()
-upbit_exchange_api = UpbitExchangeApi()
+from .quotation_api import upbit_quotation_api
+from .exchange_api import upbit_exchange_api

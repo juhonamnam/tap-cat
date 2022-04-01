@@ -24,6 +24,11 @@
       "level": "DEBUG",
       "handlers": ["console"],
       "propagate": true
+    },
+    "upbit_exchange_api": {
+      "level": "DEBUG",
+      "handlers": ["console"],
+      "propagate": true
     }
   }
 }

@@ -114,3 +114,27 @@ def buy_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
         }),
         'parse_mode': 'HTML',
     })
+
+
+def buy_price_input_service(chat_id, msg_id, ticker):
+    controller.delete_message_thread(chat_id, msg_id)
+    controller.send_message_with_dict({
+        'chat_id': chat_id,
+        'text': f'Order Type: <b>buy</b>\nSelected Ticker: <i>{ticker}</i>\n\nEnter the amount that you want to buy in KRW',
+        'reply_markup': json.dumps({
+            'force_reply': True,
+            'input_field_placeholder': ticker,
+        }),
+        'parse_mode': 'HTML',
+    })
+
+
+def buy_service(chat_id, msg_id, reply_msg_id, ticker, price):
+    controller.delete_message_thread(chat_id, msg_id)
+    controller.delete_message_thread(chat_id, reply_msg_id)
+
+    # 매수작업 연동
+    controller.send_message_with_dict({
+        'chat_id': chat_id,
+        'text': f'Ticker: {ticker}\nPrice: {price}'
+    })

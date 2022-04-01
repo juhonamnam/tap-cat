@@ -1,3 +1,4 @@
+from src.main import service
 from src.resources.message import get_message
 from .base import controller
 
@@ -21,3 +22,28 @@ def exit_callback(chat_id, msg_id, args, callback_info):
 def setting_command(chat_id, msg_id, args, callback_info):
     controller.answer_callback_query(
         callback_info['id'], cache_time=10000)
+
+
+@controller.route('/')
+def start_command(chat_id, text, msg_info):
+    reply = msg_info.get('reply_to_message')
+
+    if not reply:
+        return
+
+    reply_text = reply['text']
+
+    action = ''
+    arg = ''
+
+    for entity in reply.get('entities', []):
+        start = entity['offset']
+        end = start + entity['length']
+        if entity['type'] == 'bold':
+            action = reply_text[start: end]
+        elif entity['type'] == 'italic':
+            arg = reply_text[start: end]
+
+    if action in ['buy']:
+        service.buy_service(
+            chat_id, msg_info['message_id'], reply['message_id'], arg, text)

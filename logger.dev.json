@@ -31,6 +31,11 @@
       "level": "INFO",
       "handlers": ["file_info", "file_error"],
       "propagate": true
+    },
+    "upbit_exchange_api": {
+      "level": "INFO",
+      "handlers": ["file_info", "file_error"],
+      "propagate": true
     }
   }
 }

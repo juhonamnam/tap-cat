@@ -144,3 +144,6 @@ class UpbitQuotationApi:
             return response
 
         return response
+
+
+upbit_quotation_api = UpbitQuotationApi()

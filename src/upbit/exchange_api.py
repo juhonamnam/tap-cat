@@ -1,11 +1,13 @@
 import requests
 import jwt
 import uuid
+import logging
+from .quotation_api import upbit_quotation_api
 
 
 class UpbitExchangeApi:
     def __init__(self):
-        pass
+        self.logger = logging.getLogger('upbit_exchange_api')
 
     def config(self, access, secret):
         self.access = access
@@ -64,3 +66,67 @@ class UpbitExchangeApi:
         response = self._request(requests.get, 'accounts')
 
         return response
+
+    def buy_market_order(self, ticker, price):
+
+        data = {
+            'market': ticker,
+            'side': 'bid',
+            'price': str(price),
+            'ord_type': 'price'
+        }
+
+        response = self._request(requests.post, 'orders', data=data)
+
+        if response['ok']:
+            self.logger.info(
+                f'Buy: Result: {str(response)} Data: {data}')
+        else:
+            self.logger.error(
+                f'Buy: Result: {str(response)} Data: {data}')
+
+        return response
+
+    def sell_market_order(self, ticker, volume):
+
+        data = {
+            'market': ticker,
+            'side': 'ask',
+            'price': str(volume),
+            'ord_type': 'market'
+        }
+
+        response = self._request(requests.post, 'orders', data=data)
+
+        if response['ok']:
+            self.logger.info(
+                f'Sell: Result: {str(response)} Data: {data}')
+        else:
+            self.logger.error(
+                f'Sell: Result: {str(response)} Data: {data}')
+
+        return response
+
+    def sell_market_order_by_price(self, ticker, price):
+
+        current_price = upbit_quotation_api.get_current_prices(ticker)
+
+        if not current_price['ok']:
+            return current_price
+
+        price / current_price['data'][ticker]
+
+    def buy_market_order_fee_included(self, ticker, price, fee=0.0005):
+
+        price = price / (1 + fee)
+
+        return self.buy_market_order(ticker, price)
+
+    def sell_market_order_fee_included(self, ticker, price, fee=0.0005):
+
+        price = price / (1 - fee)
+
+        return self.sell_market_order_by_price(ticker, price)
+
+
+upbit_exchange_api = UpbitExchangeApi()
