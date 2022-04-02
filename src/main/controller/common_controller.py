@@ -19,13 +19,13 @@ def exit_callback(chat_id, msg_id, args, callback_info):
 
 
 @controller.route('dummy_callback', type='callback')
-def setting_command(chat_id, msg_id, args, callback_info):
+def dummy_callback(chat_id, msg_id, args, callback_info):
     controller.answer_callback_query(
         callback_info['id'], cache_time=10000)
 
 
 @controller.route('/')
-def start_command(chat_id, text, msg_info):
+def default_message(chat_id, text, msg_info):
     reply = msg_info.get('reply_to_message')
 
     if not reply:

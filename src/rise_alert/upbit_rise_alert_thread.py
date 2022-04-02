@@ -1,3 +1,4 @@
+import json
 import threading
 import time
 from src.resources import get_message
@@ -83,5 +84,11 @@ class RiseAlertThread(threading.Thread):
     def _send_alert(self, ticker, intr):
         controller.send_message_with_dict({
             'chat_id': controller.config['one_user'],
-            'text': get_message()('rise_alert').format(ticker=ticker, intr=intr)
+            'text': get_message()('ws.rise_alert').format(ticker=ticker, intr=intr),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [
+                    [{'text': get_message()('ws.sell'), 'callback_data': f'ws_sell {ticker}'},
+                     {'text': get_message()('ws.ignore'), 'callback_data': 'exit'}],
+                ]
+            }),
         })

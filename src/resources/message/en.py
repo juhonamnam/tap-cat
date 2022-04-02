@@ -23,5 +23,7 @@ en = {
     'com.exit': 'Exit',
     'com.retry': 'Retry',
     'com.error': 'Error: {description}',
-    'rise_alert': '{ticker} exceeded {intr}%.',
+    'ws.rise_alert': '{ticker} exceeded {intr}%.',
+    'ws.sell': 'Sell Now',
+    'ws.ignore': 'Ignore',
 }
