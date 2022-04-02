@@ -18,6 +18,19 @@ def rise_alert_callback(chat_id, msg_id, args, callback_info):
     service.rise_alert_service(chat_id, msg_id)
 
 
+@controller.route('rg_exception', type='callback')
+def rg_exception_callback(chat_id, msg_id, args, callback_info):
+    service.rg_exception_service(chat_id, msg_id)
+
+
+@controller.route('rg_exception_edit', type='callback')
+def rg_exception_add_callback(chat_id, msg_id, args, callback_info):
+    method = args[0]
+    offset = int(args[1])
+    ticker = args[2] if len(args) > 2 else ''
+    service.rg_exception_edit_service(chat_id, msg_id, method, ticker, offset)
+
+
 @controller.route('set_rise_alert', type='callback')
 def set_rise_alert_callback(chat_id, msg_id, args, callback_info):
     callback_query_id = callback_info['id']

@@ -129,7 +129,7 @@ class UpbitQuotationApi:
 
         return response
 
-    def get_tickers(self, method='', fiat='KRW', offset=0, limit=12):
+    def get_tickers(self, method='', fiat='KRW', offset=0, limit=12, exclude=None):
 
         response = self._request(requests.get, 'market/all?isDetails=false')
 
@@ -146,7 +146,9 @@ class UpbitQuotationApi:
 
         elif method == 'paging':
             data = [x['market']
-                    for x in response['data'] if x['market'].startswith(fiat)]
+                    for x in response['data']
+                    if x['market'].startswith(fiat)
+                    and (not exclude or x['market'] not in exclude)]
 
             response['data'] = {
                 'paginate': {
