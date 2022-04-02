@@ -31,6 +31,11 @@ def start_command(chat_id, text, msg_info):
     if not reply:
         return
 
+    if text == 'exit':
+        controller.delete_message_thread(chat_id, msg_info['message_id'])
+        controller.delete_message(chat_id, reply['message_id'])
+        return
+
     reply_text = reply['text']
 
     action = ''
@@ -48,7 +53,7 @@ def start_command(chat_id, text, msg_info):
         service.buy_service(
             chat_id, msg_info['message_id'], reply['message_id'], arg, text)
 
-    if action in ['sell']:
+    elif action in ['sell']:
         service.sell_service(
             chat_id, msg_info['message_id'], reply['message_id'], arg, text)
 
