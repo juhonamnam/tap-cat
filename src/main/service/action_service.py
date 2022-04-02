@@ -118,11 +118,121 @@ def buy_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
     })
 
 
+def sell_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
+    tickers_info = upbit_exchange_api.get_balances(
+        method='paging', offset=offset, limit=limit)
+
+    if not tickers_info['ok']:
+        controller.edit_message_with_dict({
+            'message_id': msg_id,
+            'chat_id': chat_id,
+            'text': f'Error: {tickers_info["description"]}',
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': 'Retry', 'callback_data': f'sell_page {offset}'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+            'parse_mode': 'HTML',
+        })
+
+        return
+
+    inline_keyboard = []
+
+    ticker_list = tickers_info['data']['list']
+
+    for i in range(limit-len(ticker_list)):
+        ticker_list.append(None)
+
+    col = int(limit / row)
+
+    for i in range(row):
+        row = list()
+        for ticker in ticker_list[i*col: i*col+col]:
+            if ticker:
+                row.append({'text': ticker, 'callback_data': 'sell ' + ticker})
+            else:
+                row.append({'text': ' ', 'callback_data': f'dummy_callback'})
+
+        inline_keyboard.append(row)
+
+    total = tickers_info["data"]["paginate"]["total"]
+
+    max_page = (total - 1) // limit
+    if max_page > 0 or offset != 0:
+        pager_link = list()
+        block_page = offset // 5
+
+        if block_page != 0:
+            pager_link.append(
+                {'text': '<<', 'callback_data': 'sell_page 0'})
+            pager_link.append(
+                {'text': '<', 'callback_data': f'sell_page {(block_page) * 5 - 1}'})
+
+        for _offset in range(block_page * 5, min(block_page * 5 + 5, max_page + 1)):
+            if _offset == offset:
+                pager_link.append(
+                    {'text': f'({_offset + 1})', 'callback_data': f'sell_page {_offset}'})
+            else:
+                pager_link.append(
+                    {'text': f'{_offset + 1}', 'callback_data': f'sell_page {_offset}'})
+
+        if block_page != max_page // 5:
+            pager_link.append(
+                {'text': '>', 'callback_data': f'sell_page {(block_page) * 5 + 5}'})
+            pager_link.append(
+                {'text': '>>', 'callback_data': f'sell_page {max_page}'})
+
+        inline_keyboard.append(pager_link)
+
+    inline_keyboard.append(
+        [{'text': get_message()('com.exit'), 'callback_data': 'exit'}])
+
+    controller.edit_message_with_dict({
+        'message_id': msg_id,
+        'chat_id': chat_id,
+        'text': f'Total: {total}\nCurrent Page: {offset + 1}',
+        'reply_markup': json.dumps({
+            'inline_keyboard': inline_keyboard
+        }),
+        'parse_mode': 'HTML',
+    })
+
+
 def buy_price_input_service(chat_id, msg_id, ticker):
     controller.delete_message_thread(chat_id, msg_id)
     controller.send_message_with_dict({
         'chat_id': chat_id,
         'text': f'Order Type: <b>buy</b>\nSelected Ticker: <i>{ticker}</i>\n\nEnter the amount that you want to buy in KRW',
+        'reply_markup': json.dumps({
+            'force_reply': True,
+            'input_field_placeholder': ticker,
+        }),
+        'parse_mode': 'HTML',
+    })
+
+
+def sell_price_input_service(chat_id, msg_id, ticker):
+    # 예외상황 처리 필요
+    balance = upbit_exchange_api.get_balances(method='single', ticker=ticker)
+
+    if not balance['ok']:
+        return
+
+    curr_price = upbit_quotation_api.get_current_prices(
+        tickers=ticker, method='single')
+
+    if not curr_price['ok']:
+        return
+
+    curr_balance = float(balance['data']['balance'])
+
+    calculated_value = curr_balance * \
+        curr_price['data']['trade_price']
+
+    controller.delete_message_thread(chat_id, msg_id)
+    controller.send_message_with_dict({
+        'chat_id': chat_id,
+        'text': f'Order Type: <b>sell</b>\nSelected Ticker: <i>{ticker}</i>\nCurrent Balance: {curr_balance}\nCalculated Value: {calculated_value}\n\nEnter the amount that you want to sell',
         'reply_markup': json.dumps({
             'force_reply': True,
             'input_field_placeholder': ticker,
@@ -145,7 +255,7 @@ def random_game_input_service(chat_id, msg_id):
 
 
 def buy_service(chat_id, msg_id, reply_msg_id, ticker, price):
-
+    # 예외상황 처리 필요
     try:
         price = int(price)
     except ValueError:
@@ -168,7 +278,40 @@ def buy_service(chat_id, msg_id, reply_msg_id, ticker, price):
     })
 
 
+def sell_service(chat_id, msg_id, reply_msg_id, ticker, price):
+    # 예외상황 처리 필요
+    if price == 'all':
+        result = upbit_exchange_api.sell_market_order_all(ticker)
+
+        if not result['ok']:
+            return
+
+    else:
+        try:
+            price = int(price)
+        except ValueError:
+            return
+
+        if price < 5000:
+            return
+
+        result = upbit_exchange_api.sell_market_order_fee_included(
+            ticker, price)
+
+        if not result['ok']:
+            return
+
+    controller.delete_message_thread(chat_id, msg_id)
+    controller.delete_message_thread(chat_id, reply_msg_id)
+
+    controller.send_message_with_dict({
+        'chat_id': chat_id,
+        'text': f'{ticker}: Success'
+    })
+
+
 def random_game_service(chat_id, msg_id, reply_msg_id, text: str):
+    # 예외상황 처리 필요
     args = text.split(' ')
     if len(args) < 2:
         return

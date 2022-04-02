@@ -75,9 +75,55 @@ class UpbitExchangeApi:
                 'description': str(e),
             }
 
-    def get_balances(self):
+    def get_balances(self, method='', offset=0, limit=12, ticker='', filter_valid=True):
 
         response = self._request(requests.get, 'accounts')
+
+        if filter_valid:
+            tickers = upbit_quotation_api.get_tickers(method='set')
+
+            if not tickers['ok']:
+                return tickers
+
+        if not response['ok']:
+            return response
+
+        if method == 'avg_buy_price':
+            response['data'] = {x['unit_currency'] + '-' + x['currency']: x['avg_buy_price']
+                                for x in response['data']
+                                if x['currency'] != x['unit_currency']
+                                and (not filter_valid or x['unit_currency'] + '-' + x['currency'] in tickers['data'])}
+
+        elif method == 'paging':
+
+            data = [x['unit_currency'] + '-' + x['currency']
+                    for x in response['data']
+                    if x['currency'] != x['unit_currency']
+                    and (not filter_valid or x['unit_currency'] + '-' + x['currency'] in tickers['data'])]
+
+            response['data'] = {
+                'paginate': {
+                    'total': len(data),
+                    'limit': limit,
+                    'offset': offset
+                },
+                'list': data[offset * limit: offset * limit + limit]
+            }
+
+        elif method == 'single':
+            data = None
+            for x in response['data']:
+                if x['unit_currency'] + '-' + x['currency'] == ticker:
+                    data = x
+                    break
+
+            if data == None:
+                return {
+                    'ok': False,
+                    'description': 'You do not own this anymore'
+                }
+
+            response['data'] = data
 
         return response
 
@@ -106,7 +152,7 @@ class UpbitExchangeApi:
         data = {
             'market': ticker,
             'side': 'ask',
-            'price': str(volume),
+            'volume': str(volume),
             'ord_type': 'market'
         }
 
@@ -128,7 +174,7 @@ class UpbitExchangeApi:
         if not current_price['ok']:
             return current_price
 
-        price / current_price['data'][ticker]
+        return self.sell_market_order(ticker, price / current_price['data'][ticker])
 
     def buy_market_order_fee_included(self, ticker, price, fee=0.0005):
 
@@ -141,6 +187,15 @@ class UpbitExchangeApi:
         price = price / (1 - fee)
 
         return self.sell_market_order_by_price(ticker, price)
+
+    def sell_market_order_all(self, ticker):
+
+        balance = self.get_balances(method='single', ticker=ticker)
+
+        if not balance['ok']:
+            return balance
+
+        return self.sell_market_order(ticker, balance['data']['balance'])
 
 
 upbit_exchange_api = UpbitExchangeApi()

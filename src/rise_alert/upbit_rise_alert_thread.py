@@ -22,19 +22,14 @@ class RiseAlertThread(threading.Thread):
         while self.thread_alive:
             if self.thread_active:
                 try:
-                    balances = upbit_exchange_api.get_balances()
+                    balances = upbit_exchange_api.get_balances(
+                        method='avg_buy_price')
                     if not balances['ok']:
                         raise Exception(balances['description'])
 
-                    avg_buy_prices = {x['unit_currency'] + '-' + x['currency']: x['avg_buy_price']
-                                      for x in balances['data'] if x['currency'] != x['unit_currency']}
+                    avg_buy_prices = balances['data']
 
-                    all_tickers = upbit_quotation_api.get_tickers()
-                    if not all_tickers['ok']:
-                        raise Exception(all_tickers['description'])
-
-                    valid_tickers = all_tickers['data'].intersection(
-                        avg_buy_prices.keys())
+                    valid_tickers = avg_buy_prices.keys()
 
                     curr_prices = upbit_quotation_api.get_current_prices(
                         valid_tickers)

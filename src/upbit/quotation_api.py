@@ -105,19 +105,31 @@ class UpbitQuotationApi:
             'target_price': target_price
         }
 
-    def get_current_prices(self, tickers="KRW-BTC", prices_only=True):
+    def get_current_prices(self, tickers="KRW-BTC", method='prices_only'):
 
         params = {"markets": tickers}
 
         response = self._request(requests.get, 'ticker', params=params)
 
-        if prices_only and response['ok']:
+        if not response['ok']:
+            return response
+
+        if method == 'prices_only':
             response['data'] = {x['market']: x['trade_price']
                                 for x in response['data']}
 
+        if method == 'single':
+            try:
+                response['data'] = response['data'][0]
+            except:
+                return {
+                    'ok': False,
+                    'description': 'Such ticker does not exist'
+                }
+
         return response
 
-    def get_tickers(self, method='set', fiat='KRW', offset=0, limit=12):
+    def get_tickers(self, method='', fiat='KRW', offset=0, limit=12):
 
         response = self._request(requests.get, 'market/all?isDetails=false')
 
@@ -127,12 +139,10 @@ class UpbitQuotationApi:
         if method == 'set':
             response['data'] = {x['market']
                                 for x in response['data'] if x['market'].startswith(fiat)}
-            return response
 
         elif method == 'list':
             response['data'] = [x['market']
                                 for x in response['data'] if x['market'].startswith(fiat)]
-            return response
 
         elif method == 'paging':
             data = [x['market']
@@ -144,9 +154,8 @@ class UpbitQuotationApi:
                     'limit': limit,
                     'offset': offset
                 },
-                'list': [x for x in data[offset * limit: offset * limit + limit]]
+                'list': data[offset * limit: offset * limit + limit]
             }
-            return response
 
         return response
 
