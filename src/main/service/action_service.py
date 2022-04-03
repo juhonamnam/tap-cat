@@ -7,11 +7,11 @@ import random
 
 
 def action_service(chat_id, msg_id, callback=False):
-    text = 'Choose Your Action'
+    text = get_message()('action.default')
     inline_keyboard = [
-        [{'text': 'Buy', 'callback_data': 'buy_page 0'},
-         {'text': 'Sell', 'callback_data': 'sell_page 0'}],
-        [{'text': 'Random Game', 'callback_data': 'random_game'}],
+        [{'text': get_message()('action.buy'), 'callback_data': 'buy_page 0'},
+         {'text': get_message()('action.sell'), 'callback_data': 'sell_page 0'}],
+        [{'text': get_message()('action.rg'), 'callback_data': 'random_game'}],
     ]
 
     if callback:
@@ -46,9 +46,9 @@ def buy_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
         controller.edit_message_with_dict({
             'message_id': msg_id,
             'chat_id': chat_id,
-            'text': f'Error: {tickers_info["description"]}',
+            'text': get_message()('com.error').format(description=tickers_info['description']),
             'reply_markup': json.dumps({
-                'inline_keyboard': [[{'text': 'Retry', 'callback_data': f'buy_page {offset}'}],
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'buy_page {offset}'}],
                                     [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
             }),
             'parse_mode': 'HTML',
@@ -110,7 +110,7 @@ def buy_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
     controller.edit_message_with_dict({
         'message_id': msg_id,
         'chat_id': chat_id,
-        'text': f'Total: {total}\nCurrent Page: {offset + 1}',
+        'text': get_message()('action.buy.pg_text').format(total=total, page=offset + 1),
         'reply_markup': json.dumps({
             'inline_keyboard': inline_keyboard
         }),
@@ -126,9 +126,9 @@ def sell_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
         controller.edit_message_with_dict({
             'message_id': msg_id,
             'chat_id': chat_id,
-            'text': f'Error: {tickers_info["description"]}',
+            'text': get_message()('com.error').format(description=tickers_info['description']),
             'reply_markup': json.dumps({
-                'inline_keyboard': [[{'text': 'Retry', 'callback_data': f'sell_page {offset}'}],
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell_page {offset}'}],
                                     [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
             }),
             'parse_mode': 'HTML',
@@ -190,7 +190,7 @@ def sell_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
     controller.edit_message_with_dict({
         'message_id': msg_id,
         'chat_id': chat_id,
-        'text': f'Total: {total}\nCurrent Page: {offset + 1}',
+        'text': get_message()('action.sell.pg_text').format(total=total, page=offset + 1),
         'reply_markup': json.dumps({
             'inline_keyboard': inline_keyboard
         }),
@@ -202,7 +202,7 @@ def buy_price_input_service(chat_id, msg_id, ticker):
     controller.delete_message_thread(chat_id, msg_id)
     controller.send_message_with_dict({
         'chat_id': chat_id,
-        'text': f'Order Type: <b>buy</b>\nSelected Ticker: <i>{ticker}</i>\n\nEnter the amount that you want to buy in KRW',
+        'text': get_message()('action.buy_input_text').format(ticker=ticker),
         'reply_markup': json.dumps({
             'force_reply': True,
             'input_field_placeholder': ticker,
@@ -212,16 +212,35 @@ def buy_price_input_service(chat_id, msg_id, ticker):
 
 
 def sell_price_input_service(chat_id, msg_id, ticker):
-    # 예외상황 처리 필요
     balance = upbit_exchange_api.get_balances(method='single', ticker=ticker)
 
     if not balance['ok']:
+        controller.edit_message_with_dict({
+            'message_id': msg_id,
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=balance['description']),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell {ticker}'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+            'parse_mode': 'HTML',
+        })
         return
 
     curr_price = upbit_quotation_api.get_current_prices(
         tickers=ticker, method='single')
 
     if not curr_price['ok']:
+        controller.edit_message_with_dict({
+            'message_id': msg_id,
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=curr_price['description']),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell {ticker}'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+            'parse_mode': 'HTML',
+        })
         return
 
     curr_balance = float(balance['data']['balance'])
@@ -232,7 +251,7 @@ def sell_price_input_service(chat_id, msg_id, ticker):
     controller.delete_message_thread(chat_id, msg_id)
     controller.send_message_with_dict({
         'chat_id': chat_id,
-        'text': f'Order Type: <b>sell</b>\nSelected Ticker: <i>{ticker}</i>\nCurrent Balance: {curr_balance}\nCalculated Value: {calculated_value}\n\nEnter the amount that you want to sell',
+        'text': get_message()('action.sell_input_text').format(ticker=ticker, curr_balance=curr_balance, calculated_value=calculated_value),
         'reply_markup': json.dumps({
             'force_reply': True,
             'input_field_placeholder': ticker,
@@ -245,10 +264,10 @@ def random_game_input_service(chat_id, msg_id):
     controller.delete_message_thread(chat_id, msg_id)
     controller.send_message_with_dict({
         'chat_id': chat_id,
-        'text': 'Order Type: <b>Random Game</b>\n\nEnter the number of coins and the amount for each coin',
+        'text': get_message()('action.rg_input_text'),
         'reply_markup': json.dumps({
             'force_reply': True,
-            'input_field_placeholder': '[number of coins] [price]',
+            'input_field_placeholder': get_message()('action.rg_input_ph'),
         }),
         'parse_mode': 'HTML',
     })
@@ -274,7 +293,7 @@ def buy_service(chat_id, msg_id, reply_msg_id, ticker, price):
 
     controller.send_message_with_dict({
         'chat_id': chat_id,
-        'text': f'{ticker}: Success'
+        'text': get_message()('buy.success').format(ticker=ticker)
     })
 
 
@@ -306,7 +325,7 @@ def sell_service(chat_id, msg_id, reply_msg_id, ticker, price):
 
     controller.send_message_with_dict({
         'chat_id': chat_id,
-        'text': f'{ticker}: Success'
+        'text': get_message()('sell.success').format(ticker=ticker)
     })
 
 
@@ -341,9 +360,9 @@ def random_game_service(chat_id, msg_id, reply_msg_id, text: str):
         result = upbit_exchange_api.buy_market_order_fee_included(
             ticker, price)
         if result['ok']:
-            rows.append(f'{ticker}: Success')
+            rows.append(get_message()('buy.success').format(ticker=ticker))
         else:
-            rows.append(f'{ticker}: Fail')
+            rows.append(get_message()('buy.fail').format(ticker=ticker))
         time.sleep(0.5)
 
     controller.send_message_with_dict({

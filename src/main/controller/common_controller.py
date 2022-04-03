@@ -31,7 +31,7 @@ def default_message(chat_id, text, msg_info):
     if not reply:
         return
 
-    if text == 'exit':
+    if text.lower() == 'exit':
         controller.delete_message_thread(chat_id, msg_info['message_id'])
         controller.delete_message(chat_id, reply['message_id'])
         return

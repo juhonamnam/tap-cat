@@ -14,7 +14,7 @@ def ws_sell_callback(chat_id, msg_id, args, callback_info):
         controller.edit_message_with_dict({
             'message_id': msg_id,
             'chat_id': chat_id,
-            'text': f'{ticker}: Success'
+            'text': get_message()('sell.success').format(ticker=ticker)
         })
 
     else:
