@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "basic": {
+      "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    }
+  },
+  "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "DEBUG",
+      "formatter": "basic"
+    }
+  },
+  "loggers": {
+    "telesk": {
+      "level": "DEBUG",
+      "handlers": ["console"],
+      "propagate": true
+    },
+    "rise_alert": {
+      "level": "DEBUG",
+      "handlers": ["console"],
+      "propagate": true
+    },
+    "upbit_exchange_api": {
+      "level": "DEBUG",
+      "handlers": ["console"],
+      "propagate": true
+    }
+  }
+}
