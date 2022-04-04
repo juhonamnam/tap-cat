@@ -12,6 +12,7 @@ def action_service(chat_id, msg_id, callback=False):
         [{'text': get_message()('action.buy'), 'callback_data': 'buy_page 0'},
          {'text': get_message()('action.sell'), 'callback_data': 'sell_page 0'}],
         [{'text': get_message()('action.rg'), 'callback_data': 'random_game'}],
+        [{'text': get_message()('com.exit'), 'callback_data': 'exit'}],
     ]
 
     if callback:
@@ -51,7 +52,6 @@ def buy_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
                 'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'buy_page {offset}'}],
                                     [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
             }),
-            'parse_mode': 'HTML',
         })
 
         return
@@ -131,7 +131,6 @@ def sell_page_service(chat_id, msg_id, offset=0, limit=18, row=6):
                 'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell_page {offset}'}],
                                     [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
             }),
-            'parse_mode': 'HTML',
         })
 
         return
@@ -223,7 +222,6 @@ def sell_price_input_service(chat_id, msg_id, ticker):
                 'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell {ticker}'}],
                                     [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
             }),
-            'parse_mode': 'HTML',
         })
         return
 
@@ -239,7 +237,6 @@ def sell_price_input_service(chat_id, msg_id, ticker):
                 'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell {ticker}'}],
                                     [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
             }),
-            'parse_mode': 'HTML',
         })
         return
 
@@ -274,22 +271,45 @@ def random_game_input_service(chat_id, msg_id):
 
 
 def buy_service(chat_id, msg_id, reply_msg_id, ticker, price):
-    # 예외상황 처리 필요
+    controller.delete_message_thread(chat_id, msg_id)
+    controller.delete_message_thread(chat_id, reply_msg_id)
+
     try:
         price = int(price)
     except ValueError:
+        controller.send_message_with_dict({
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=get_message()('action.val1')),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'buy {ticker}'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+        })
         return
 
     if price < 5000:
+        controller.send_message_with_dict({
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=get_message()('action.val2')),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'buy {ticker}'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+        })
         return
 
     result = upbit_exchange_api.buy_market_order_fee_included(ticker, price)
 
     if not result['ok']:
+        controller.send_message_with_dict({
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=result['description']),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'buy {ticker}'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+        })
         return
-
-    controller.delete_message_thread(chat_id, msg_id)
-    controller.delete_message_thread(chat_id, reply_msg_id)
 
     controller.send_message_with_dict({
         'chat_id': chat_id,
@@ -298,30 +318,61 @@ def buy_service(chat_id, msg_id, reply_msg_id, ticker, price):
 
 
 def sell_service(chat_id, msg_id, reply_msg_id, ticker, price):
-    # 예외상황 처리 필요
+    controller.delete_message_thread(chat_id, msg_id)
+    controller.delete_message_thread(chat_id, reply_msg_id)
+
     if price == 'all':
         result = upbit_exchange_api.sell_market_order_all(ticker)
 
         if not result['ok']:
+            controller.send_message_with_dict({
+                'chat_id': chat_id,
+                'text': get_message()('com.error').format(description=result['description']),
+                'reply_markup': json.dumps({
+                    'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell {ticker}'}],
+                                        [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+                }),
+            })
             return
 
     else:
         try:
             price = int(price)
         except ValueError:
+            controller.send_message_with_dict({
+                'chat_id': chat_id,
+                'text': get_message()('com.error').format(description=get_message()('action.val1')),
+                'reply_markup': json.dumps({
+                    'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell {ticker}'}],
+                                        [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+                }),
+            })
             return
 
         if price < 5000:
+            controller.send_message_with_dict({
+                'chat_id': chat_id,
+                'text': get_message()('com.error').format(description=get_message()('action.val2')),
+                'reply_markup': json.dumps({
+                    'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell {ticker}'}],
+                                        [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+                }),
+            })
             return
 
         result = upbit_exchange_api.sell_market_order_fee_included(
             ticker, price)
 
         if not result['ok']:
+            controller.send_message_with_dict({
+                'chat_id': chat_id,
+                'text': get_message()('com.error').format(description=result['description']),
+                'reply_markup': json.dumps({
+                    'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': f'sell {ticker}'}],
+                                        [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+                }),
+            })
             return
-
-    controller.delete_message_thread(chat_id, msg_id)
-    controller.delete_message_thread(chat_id, reply_msg_id)
 
     controller.send_message_with_dict({
         'chat_id': chat_id,
@@ -330,27 +381,69 @@ def sell_service(chat_id, msg_id, reply_msg_id, ticker, price):
 
 
 def random_game_service(chat_id, msg_id, reply_msg_id, text: str):
-    # 예외상황 처리 필요
+    controller.delete_message_thread(chat_id, msg_id)
+    controller.delete_message_thread(chat_id, reply_msg_id)
+
     args = text.split(' ')
     if len(args) < 2:
+        controller.send_message_with_dict({
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=get_message()('action.val3')),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': 'random_game'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+        })
         return
 
     try:
         select = int(args[0])
         price = int(args[1])
     except ValueError:
+        controller.send_message_with_dict({
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=get_message()('action.val4')),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': 'random_game'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+        })
         return
 
-    if select < 1 or price < 5000:
+    if select < 1:
+        controller.send_message_with_dict({
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=get_message()('action.val5')),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': 'random_game'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+        })
+        return
+
+    if price < 5000:
+        controller.send_message_with_dict({
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=get_message()('action.val2')),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': 'random_game'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+        })
         return
 
     tickers_info = upbit_quotation_api.get_tickers(method='list')
 
     if not tickers_info['ok']:
+        controller.send_message_with_dict({
+            'chat_id': chat_id,
+            'text': get_message()('com.error').format(description=tickers_info['description']),
+            'reply_markup': json.dumps({
+                'inline_keyboard': [[{'text': get_message()('com.retry'), 'callback_data': 'random_game'}],
+                                    [{'text': get_message()('com.exit'), 'callback_data': 'exit'}]]
+            }),
+        })
         return
-
-    controller.delete_message_thread(chat_id, msg_id)
-    controller.delete_message_thread(chat_id, reply_msg_id)
 
     choices = random.choices(tickers_info['data'], k=select)
 
