@@ -133,7 +133,7 @@ class Telesk(Scaffold):
             else:
                 self.logger.info(f'New Update: {str(msg)}')
         except Exception as e:
-            self.logger.exception(e)
+            self.logger.error(str(e))
 
     # Initialize
     def _verify_api_key(self):
@@ -165,7 +165,7 @@ class Telesk(Scaffold):
                 else:
                     self._process_new_messages(response)
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.error(str(e))
                 time.sleep(_cooldown)
 
     def poll(self, poll_timeout=None, cooldown=None):
@@ -191,7 +191,7 @@ class Telesk(Scaffold):
             self.logger.info('Telesk Server End')
             exit()
         except Exception as e:
-            self.logger.exception(e)
+            self.logger.error(str(e))
 
     # Requests
     def _request(self, method, endpoint, **kwargs):
