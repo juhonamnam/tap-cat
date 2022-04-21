@@ -68,7 +68,7 @@ class RiseAlertThread(threading.Thread):
                                 ticker, self.sell_alert[ticker]['interest'])
 
                 except Exception as e:
-                    self.logger.exception(e)
+                    self.logger.error(str(e))
                     time.sleep(5)
 
             time.sleep(2)
