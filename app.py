@@ -13,14 +13,14 @@ if len(sys.argv) > 1 and sys.argv[1] == 'dev':
 else:
     logging.config.dictConfig(json.load(open('./logger.local.json')))
 
-access = os.getenv('cat_upbit_access_key')
-secret = os.getenv('cat_upbit_secret_key')
+access = os.getenv('CAT_UPBIT_ACCESS_KEY')
+secret = os.getenv('CAT_UPBIT_SECRET_KEY')
 
 upbit_exchange_api.config(access, secret)
 
 app = Telesk()
-app.config['api_key'] = os.getenv('cat_tele_key')
-app.config['one_user'] = os.getenv('cat_user_id', 'dummy_user_id')
+app.config['api_key'] = os.getenv('CAT_TELE_KEY')
+app.config['one_user'] = os.getenv('CAT_USER_ID', 'dummy_user_id')
 app.config['commands'] = get_commands()
 app.config['allow_group'] = False
 app.register_blueprint(controller)
