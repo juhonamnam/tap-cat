@@ -8,33 +8,26 @@
     }
   },
   "handlers": {
-    "file_info": {
-      "class": "logging.FileHandler",
-      "level": "INFO",
-      "formatter": "basic",
-      "filename": "app_dev.log"
-    },
-    "file_error": {
-      "class": "logging.FileHandler",
-      "level": "ERROR",
-      "formatter": "basic",
-      "filename": "app_dev_error.log"
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "DEBUG",
+      "formatter": "basic"
     }
   },
   "loggers": {
     "telesk": {
-      "level": "INFO",
-      "handlers": ["file_info", "file_error"],
+      "level": "DEBUG",
+      "handlers": ["console"],
       "propagate": true
     },
     "rise_alert": {
-      "level": "INFO",
-      "handlers": ["file_info", "file_error"],
+      "level": "DEBUG",
+      "handlers": ["console"],
       "propagate": true
     },
     "upbit_exchange_api": {
-      "level": "INFO",
-      "handlers": ["file_info", "file_error"],
+      "level": "DEBUG",
+      "handlers": ["console"],
       "propagate": true
     }
   }
