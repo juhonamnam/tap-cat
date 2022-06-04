@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "basic": {
+      "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    }
+  },
+  "handlers": {
+    "file_info": {
+      "class": "logging.FileHandler",
+      "level": "INFO",
+      "formatter": "basic",
+      "filename": "app.log"
+    },
+    "file_error": {
+      "class": "logging.FileHandler",
+      "level": "ERROR",
+      "formatter": "basic",
+      "filename": "app_error.log"
+    }
+  },
+  "loggers": {
+    "telesk": {
+      "level": "INFO",
+      "handlers": ["file_info", "file_error"],
+      "propagate": true
+    },
+    "rise_alert": {
+      "level": "INFO",
+      "handlers": ["file_info", "file_error"],
+      "propagate": true
+    },
+    "upbit_exchange_api": {
+      "level": "INFO",
+      "handlers": ["file_info", "file_error"],
+      "propagate": true
+    }
+  }
+}
