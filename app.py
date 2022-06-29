@@ -6,6 +6,12 @@ from src.telesk import Telesk
 import logging.config
 import json
 from env import access_key, secret_key, api_key, user_id, is_production
+import signal
+
+def handle_sigterm(*args):
+    raise KeyboardInterrupt()
+
+signal.signal(signal.SIGTERM, handle_sigterm)
 
 if is_production:
     logging.config.dictConfig(json.load(open('./logger.json')))
