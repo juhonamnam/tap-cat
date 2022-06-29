@@ -6,8 +6,11 @@ from src.telesk import Telesk
 import logging.config
 import json
 from env import access_key, secret_key, api_key, user_id, is_production
+import os
 
 if is_production:
+    if not os.path.exists('./logs'):
+        os.mkdir('./logs')
     logging.config.dictConfig(json.load(open('./logger.json')))
 else:
     logging.config.dictConfig(json.load(open('./logger.dev.json')))

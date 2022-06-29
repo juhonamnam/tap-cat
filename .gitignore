@@ -12,7 +12,7 @@ __pycache__/
 *.db
 
 # log
-*.log
+/logs
 
 # env
 *.env
