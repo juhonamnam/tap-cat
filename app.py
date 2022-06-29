@@ -1,4 +1,3 @@
-import sys
 from src.main.controller import controller
 from src.resources.commands import get_commands
 from src.rise_alert import rise_alert_thread
@@ -6,9 +5,9 @@ from src.upbit import upbit_exchange_api
 from src.telesk import Telesk
 import logging.config
 import json
-from env import access_key, secret_key, api_key, user_id
+from env import access_key, secret_key, api_key, user_id, is_production
 
-if len(sys.argv) > 1 and sys.argv[1] == 'production':
+if is_production:
     logging.config.dictConfig(json.load(open('./logger.json')))
 else:
     logging.config.dictConfig(json.load(open('./logger.dev.json')))

@@ -13,6 +13,3 @@ __pycache__/
 
 # log
 *.log
-
-# env
-*.env
