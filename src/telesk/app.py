@@ -12,7 +12,7 @@ class Telesk(Scaffold):
 
         self.config = dict(
             api_key=None,
-            poll_timeout=600,
+            timeout=600,
             cool_down=60,
             commands=[],
             allow_group=True,
@@ -141,7 +141,7 @@ class Telesk(Scaffold):
             raise Exception("config api_key is undefined")
         response = self._get_me()
         if not response.get('ok', False):
-            raise Exception(self.bot_info.get('description'))
+            raise Exception(response.get('description'))
         self.bot_info = response['result']
 
     def _set_bot_commands_options(self):
@@ -168,26 +168,27 @@ class Telesk(Scaffold):
                 self.logger.error(str(e))
                 time.sleep(_cooldown)
 
-    def poll(self, poll_timeout=None, cooldown=None):
+    def poll(self, on_disconnect=None):
 
         try:
             self.logger.info('Telesk Server Getting Ready...')
             self._verify_api_key()
             self._set_bot_commands_options()
             self._set_initial_offset()
-            _poll_timeout = poll_timeout or self.config.get(
-                'poll_timeout', 600)
-            _cooldown = cooldown or self.config.get('cooldown', 60)
+            poll_timeout = self.config.get('timeout', 600)
+            cooldown = self.config.get('cooldown', 60)
             self.logger.info('Telesk Server Start')
             poll_thread = Thread(
                 target=self._poll,
-                args=(_poll_timeout, _cooldown),
+                args=(poll_timeout, cooldown),
                 daemon=True
             )
             poll_thread.start()
             while True:
                 time.sleep(100000)
         except KeyboardInterrupt:
+            if on_disconnect:
+                on_disconnect()
             self.logger.info('Telesk Server End')
             exit()
         except Exception as e:
@@ -202,7 +203,8 @@ class Telesk(Scaffold):
         try:
             response = method(endpoint,
                               data=kwargs.get('data', None),
-                              params=kwargs.get('params', {}))
+                              params=kwargs.get('params', {}),
+                              timeout=self.config.get('timeout', 600))
 
             return response.json()
         except requests.exceptions.ConnectionError:

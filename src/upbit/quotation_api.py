@@ -13,7 +13,8 @@ class UpbitQuotationApi:
         try:
             response = method(endpoint,
                               params=kwargs.get('params', {}),
-                              headers={"Accept": "application/json"})
+                              headers={"Accept": "application/json"},
+                              timeout=600)
 
             data = response.json()
 

@@ -49,7 +49,8 @@ class UpbitExchangeApi:
             response = method(endpoint,
                               data=kwargs.get('data', None),
                               params=kwargs.get('params', {}),
-                              headers=headers)
+                              headers=headers,
+                              timeout=600)
 
             data = response.json()
 
