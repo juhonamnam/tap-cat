@@ -198,13 +198,13 @@ class Telesk(Scaffold):
     def _request(self, method, endpoint, **kwargs):
         base_api = "https://api.telegram.org/bot{api_key}/{endpoint}"
         endpoint = base_api.format(api_key=self.config['api_key'],
-                                   endpoint=endpoint,
-                                   timeout=self.config.get('timeout', 600))
+                                   endpoint=endpoint)
 
         try:
             response = method(endpoint,
                               data=kwargs.get('data', None),
-                              params=kwargs.get('params', {}))
+                              params=kwargs.get('params', {}),
+                              timeout=self.config.get('timeout', 600))
 
             return response.json()
         except requests.exceptions.ConnectionError:
